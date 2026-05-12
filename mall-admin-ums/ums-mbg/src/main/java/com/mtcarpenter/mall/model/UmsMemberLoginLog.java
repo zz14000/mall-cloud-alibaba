@@ -5,6 +5,25 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 会员登录日志实体类
+ * <p>
+ * 对应数据库表 ums_member_login_log，记录前台会员每次登录的详细信息，
+ * 包括登录IP、地理位置、登录终端类型等，用于会员行为分析和账号安全监控。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>memberId - 会员ID，关联 UmsMember.id</li>
+ *   <li>createTime - 登录时间</li>
+ *   <li>ip - 登录IP地址</li>
+ *   <li>city - 登录城市</li>
+ *   <li>loginType - 登录类型：0->PC；1->android；2->ios；3->小程序</li>
+ *   <li>province - 登录省份</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberLoginLog implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

@@ -5,6 +5,24 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台管理员登录日志实体类
+ * <p>
+ * 对应数据库表 ums_admin_login_log，记录后台管理员每次登录的详细信息，
+ * 用于安全审计、登录行为分析和异常登录检测。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>adminId - 管理员ID，关联 UmsAdmin.id</li>
+ *   <li>createTime - 登录时间</li>
+ *   <li>ip - 登录IP地址</li>
+ *   <li>address - 登录地理位置</li>
+ *   <li>userAgent - 浏览器登录类型（User-Agent 信息）</li>
+ * </ul>
+ * </p>
+ */
 public class UmsAdminLoginLog implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

@@ -6,6 +6,35 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 会员统计信息实体类
+ * <p>
+ * 对应数据库表 ums_member_statistics_info，汇总统计会员的各项业务数据，
+ * 包括消费金额、订单数量、评价数量、关注/粉丝数等，
+ * 用于会员画像构建、运营数据分析和会员价值评估。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>memberId - 会员ID，关联 UmsMember.id</li>
+ *   <li>consumeAmount - 累计消费金额</li>
+ *   <li>orderCount - 订单数量</li>
+ *   <li>couponCount - 优惠券数量</li>
+ *   <li>commentCount - 评价数</li>
+ *   <li>returnOrderCount - 退货数量</li>
+ *   <li>loginCount - 登录次数</li>
+ *   <li>attendCount - 关注数量</li>
+ *   <li>fansCount - 粉丝数量</li>
+ *   <li>collectProductCount - 收藏商品数量</li>
+ *   <li>collectSubjectCount - 收藏专题数量</li>
+ *   <li>collectTopicCount - 收藏话题数量</li>
+ *   <li>collectCommentCount - 收藏评论数量</li>
+ *   <li>inviteFriendCount - 邀请好友数量</li>
+ *   <li>recentOrderTime - 最后一次下订单时间</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberStatisticsInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

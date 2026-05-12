@@ -5,6 +5,25 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台资源实体类
+ * <p>
+ * 对应数据库表 ums_resource，定义后台管理系统的 API 资源，用于基于 URL 的接口级权限控制。
+ * 与 UmsPermission 的按钮级权限不同，UmsResource 直接对应后端 API 接口的 URL 路径，
+ * 通过角色与资源的关联关系，在网关或拦截器层面控制接口的访问权限。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>createTime - 创建时间</li>
+ *   <li>name - 资源名称</li>
+ *   <li>url - 资源URL（如 /admin/product/create）</li>
+ *   <li>description - 资源描述</li>
+ *   <li>categoryId - 资源分类ID，关联 UmsResourceCategory.id</li>
+ * </ul>
+ * </p>
+ */
 public class UmsResource implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

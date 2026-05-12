@@ -5,6 +5,38 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 会员（前台用户）实体类
+ * <p>
+ * 对应数据库表 ums_member，存储商城前台注册用户（C端消费者）的完整信息，
+ * 包括账号信息、个人资料、积分与成长值等，是会员体系的核心实体。
+ * 会员通过积分和成长值参与会员等级体系，享受不同等级的专属权益。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>memberLevelId - 会员等级ID，关联 UmsMemberLevel.id</li>
+ *   <li>username - 用户名，登录凭证</li>
+ *   <li>password - 密码，加密存储</li>
+ *   <li>nickname - 昵称</li>
+ *   <li>phone - 手机号码</li>
+ *   <li>status - 帐号启用状态：0->禁用；1->启用</li>
+ *   <li>createTime - 注册时间</li>
+ *   <li>icon - 头像URL</li>
+ *   <li>gender - 性别：0->未知；1->男；2->女</li>
+ *   <li>birthday - 生日</li>
+ *   <li>city - 所在城市</li>
+ *   <li>job - 职业</li>
+ *   <li>personalizedSignature - 个性签名</li>
+ *   <li>sourceType - 用户来源</li>
+ *   <li>integration - 当前积分</li>
+ *   <li>growth - 当前成长值</li>
+ *   <li>luckeyCount - 剩余抽奖次数</li>
+ *   <li>historyIntegration - 历史积分总量</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMember implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

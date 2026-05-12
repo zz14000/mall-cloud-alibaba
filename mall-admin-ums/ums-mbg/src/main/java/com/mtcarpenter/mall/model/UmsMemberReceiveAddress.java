@@ -4,6 +4,29 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
+/**
+ * 会员收货地址实体类
+ * <p>
+ * 对应数据库表 ums_member_receive_address，存储会员的收货地址信息，
+ * 一个会员可以拥有多个收货地址，其中可设置一个为默认地址。
+ * 下单时从该表选择收货地址，确保配送信息准确。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>memberId - 会员ID，关联 UmsMember.id</li>
+ *   <li>name - 收货人名称</li>
+ *   <li>phoneNumber - 收货人手机号</li>
+ *   <li>defaultStatus - 是否为默认地址</li>
+ *   <li>postCode - 邮政编码</li>
+ *   <li>province - 省份/直辖市</li>
+ *   <li>city - 城市</li>
+ *   <li>region - 区</li>
+ *   <li>detailAddress - 详细地址（街道）</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberReceiveAddress implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

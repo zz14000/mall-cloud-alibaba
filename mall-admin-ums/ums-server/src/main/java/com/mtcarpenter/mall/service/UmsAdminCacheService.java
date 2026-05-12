@@ -7,6 +7,9 @@ import java.util.List;
 
 /**
  * 后台用户缓存操作类
+ * 进行数据更新时，先更新数据库，再删除缓存信息
+ * 注意是删除缓存，不是更新缓存
+ * 保障一致性
  * Created by macro on 2020/3/13.
  */
 public interface UmsAdminCacheService {

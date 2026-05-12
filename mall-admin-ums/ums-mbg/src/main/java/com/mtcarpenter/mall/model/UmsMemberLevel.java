@@ -5,6 +5,32 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+/**
+ * 会员等级实体类
+ * <p>
+ * 对应数据库表 ums_member_level，定义会员等级体系中的各个等级及其对应权益。
+ * 会员通过成长值达到不同等级，享受免运费、签到奖励、会员价格、生日特权等差异化权益，
+ * 是会员运营和用户留存的核心配置。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>name - 等级名称</li>
+ *   <li>growthPoint - 达到该等级所需成长值</li>
+ *   <li>defaultStatus - 是否为默认等级：0->不是；1->是</li>
+ *   <li>freeFreightPoint - 免运费标准</li>
+ *   <li>commentGrowthPoint - 每次评价获取的成长值</li>
+ *   <li>priviledgeFreeFreight - 是否有免邮特权</li>
+ *   <li>priviledgeSignIn - 是否有签到特权</li>
+ *   <li>priviledgeComment - 是否有评论获奖励特权</li>
+ *   <li>priviledgePromotion - 是否有专享活动特权</li>
+ *   <li>priviledgeMemberPrice - 是否有会员价格特权</li>
+ *   <li>priviledgeBirthday - 是否有生日特权</li>
+ *   <li>note - 备注信息</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberLevel implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

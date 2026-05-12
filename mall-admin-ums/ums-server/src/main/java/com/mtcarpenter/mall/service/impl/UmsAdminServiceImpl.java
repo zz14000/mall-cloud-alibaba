@@ -68,16 +68,22 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     @Value("${jwt.tokenHead}")
     private String tokenHead;
 
+    /**
+     * 虽然数据库设计缺陷（username 无唯一约束）导致理论上可能查出多条记录，
+     * 但业务上 username 应该是唯一的；代码取第一个是一种防御性编程的容错处理——正常情况下只有一条，
+     * 异常情况下（脏数据）默认第一条有效，同时避免因程序 bug 或并发导致的数据重复问题引发系统崩溃。
+     */
     @Override
     public UmsAdmin getAdminByUsername(String username) {
-        UmsAdmin admin = adminCacheService.getAdmin(username);
+        UmsAdmin admin = adminCacheService.getAdmin(username);  //从缓存中拿
         if(admin!=null) return  admin;
+        //从数据库中差
         UmsAdminExample example = new UmsAdminExample();
         example.createCriteria().andUsernameEqualTo(username);
         List<UmsAdmin> adminList = adminMapper.selectByExample(example);
         if (adminList != null && adminList.size() > 0) {
             admin = adminList.get(0);
-            adminCacheService.setAdmin(admin);
+            adminCacheService.setAdmin(admin); 
             return admin;
         }
         return null;
@@ -103,6 +109,11 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         return umsAdmin;
     }
 
+    /**
+     * 此时的 setAuthentication 作用
+     * - 让当前登录线程知道"这个用户已认证"
+     * - 后续操作（如生成 Token、记录日志）可以获取用户信息
+     */
     @Override
     public String login(String username, String password) {
         String token = null;
@@ -112,7 +123,9 @@ public class UmsAdminServiceImpl implements UmsAdminService {
             if(!passwordEncoder.matches(password,userDetails.getPassword())){
                 throw new BadCredentialsException("密码不正确");
             }
+            //构建认证令牌
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            //放入安全上下文，后续请求即可获取到当前用户信息
             SecurityContextHolder.getContext().setAuthentication(authentication);
             token = jwtTokenUtil.generateToken(userDetails);
 //            updateLoginTimeByUsername(username);
@@ -306,6 +319,14 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         return 1;
     }
 
+    /**
+     * loadUserByUsername 是 Spring Security 认证体系的入口方法，
+     * 它的职责是根据用户名查出用户信息和权限资源，
+     * 封装成 UserDetails 对象。其中的 resourceList 就是该管理员通过角色关联能访问的所有 API 资源列表，
+     * 它被转换为 GrantedAuthority 后，在每次请求时与接口所需权限进行比对，实现了基于资源的动态权限控制。
+     * @param username
+     * @return
+     */
     @Override
     public UserDetails loadUserByUsername(String username){
         //获取用户信息

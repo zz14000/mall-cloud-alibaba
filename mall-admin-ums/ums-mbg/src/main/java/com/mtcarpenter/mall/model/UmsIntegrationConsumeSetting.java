@@ -4,6 +4,24 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
+/**
+ * 积分消费设置实体类
+ * <p>
+ * 对应数据库表 ums_integration_consume_setting，配置会员积分在订单消费时的抵扣规则，
+ * 包括每元抵扣积分数量、每笔订单最高抵扣比例、积分使用最小单位等，
+ * 控制积分作为支付手段的使用策略。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>deductionPerAmount - 每一元需要抵扣的积分数量</li>
+ *   <li>maxPercentPerOrder - 每笔订单最高抵用百分比</li>
+ *   <li>useUnit - 每次使用积分最小单位（如100积分起用）</li>
+ *   <li>couponStatus - 是否可以和优惠券同用：0->不可以；1->可以</li>
+ * </ul>
+ * </p>
+ */
 public class UmsIntegrationConsumeSetting implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

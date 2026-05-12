@@ -34,9 +34,18 @@ public class DynamicSecurityFilter extends AbstractSecurityInterceptor implement
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
+    /**
+     * 执行时机 ：在 JWT 过滤器之后，Controller 之前
+     * 做的事情 ：
+     * 1. 检查是否白名单路径
+     * 2. 调用 beforeInvocation() 触发权限检查
+     * 3. 如果通过，执行 Controller
+     * 4. 如果失败，抛出 AccessDeniedException
+     */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
+        // FilterInvocation是 Spring Security 封装的"过滤器调用"对象，包含了请求、响应、过滤器链等信息
         FilterInvocation fi = new FilterInvocation(servletRequest, servletResponse, filterChain);
         //OPTIONS请求直接放行
         if(request.getMethod().equals(HttpMethod.OPTIONS.toString())){

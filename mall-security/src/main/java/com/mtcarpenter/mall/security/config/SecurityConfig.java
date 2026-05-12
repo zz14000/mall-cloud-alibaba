@@ -29,8 +29,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity
-                .authorizeRequests();
+        //开启权限配置
+        //分阶段配置 ：不同阶段返回不同类型的 Registry
+        //ExpressionUrlAuthorizationConfigurer 这是 HttpSecurity 的内部类
+        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = 
+        httpSecurity.authorizeRequests(); //方法调用 启动 URL 授权配置
         //不需要保护的资源路径允许访问
         for (String url : ignoreUrlsConfig().getUrls()) {
             registry.antMatchers(url).permitAll();

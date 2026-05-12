@@ -68,10 +68,10 @@ mybatis:
     - classpath:dao/*.xml
     - classpath*:com/**/mapper/*.xml
 jwt:
-  tokenHeader: Authorization #JWT存储的请求头
+  tokenHeader: Authorization #JWT存储的请求头 告诉系统"去哪个请求头找 Token"
   secret: mall-admin-secret #JWT加解密使用的密钥
   expiration: 604800 #JWT的超期限时间(60*60*24*7)
-  tokenHead: Bearer  #JWT负载中拿到开头
+  tokenHead: Bearer  #JWT负载中拿到开头 告诉系统"Token 值以什么前缀开头，需要截掉前缀才能解析" 。
 
 redis:
   database: mall

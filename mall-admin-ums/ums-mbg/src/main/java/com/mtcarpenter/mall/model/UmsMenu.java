@@ -5,6 +5,28 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台菜单实体类
+ * <p>
+ * 对应数据库表 ums_menu，定义后台管理系统的菜单结构，采用树形层级组织。
+ * 菜单与角色关联，控制不同角色在后台管理界面中可见的菜单项，
+ * 实现前端页面的权限控制（菜单级权限）。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>parentId - 父级菜单ID，顶级菜单为0</li>
+ *   <li>createTime - 创建时间</li>
+ *   <li>title - 菜单显示名称</li>
+ *   <li>level - 菜单级数</li>
+ *   <li>sort - 菜单排序（数值越小越靠前）</li>
+ *   <li>name - 前端路由名称</li>
+ *   <li>icon - 前端图标</li>
+ *   <li>hidden - 前端是否隐藏：0->显示；1->隐藏</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMenu implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

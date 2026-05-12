@@ -41,10 +41,12 @@ public class MallSecurityConfig extends SecurityConfig {
 
     @Bean
     public DynamicSecurityService dynamicSecurityService() {
+        //动态权限配置
         return () -> {
             Map<String, ConfigAttribute> map = new ConcurrentHashMap<>();
             List<UmsResource> resourceList = resourceService.listAll();
             for (UmsResource resource : resourceList) {
+                //key = URL 路径，value = 权限标识
                 map.put(resource.getUrl(), new org.springframework.security.access.SecurityConfig(resource.getId() + ":" + resource.getName()));
             }
             return map;

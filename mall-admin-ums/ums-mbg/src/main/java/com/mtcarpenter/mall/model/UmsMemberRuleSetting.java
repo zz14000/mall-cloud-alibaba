@@ -5,6 +5,25 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+/**
+ * 会员规则设置实体类
+ * <p>
+ * 对应数据库表 ums_member_rule_setting，配置会员积分和成长值的获取规则，
+ * 包括连续签到奖励规则、消费获取积分规则等，控制会员体系中积分和成长值的发放策略。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>continueSignDay - 连续签到天数</li>
+ *   <li>continueSignPoint - 连续签到赠送数量</li>
+ *   <li>consumePerPoint - 每消费多少元获取1个点</li>
+ *   <li>lowOrderAmount - 最低获取点数的订单金额</li>
+ *   <li>maxPointPerOrder - 每笔订单最高获取点数</li>
+ *   <li>type - 类型：0->积分规则；1->成长值规则</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberRuleSetting implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

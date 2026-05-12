@@ -93,7 +93,9 @@ public interface UmsAdminService {
     int updatePassword(UpdateAdminPasswordParam updatePasswordParam);
 
     /**
-     * 获取用户信息
+     * Spring Security 的 UserDetailsService 接口 定义的方法
+     * 根据用户名，查出一个完整的用户详情对象（ UserDetails ），
+     * 供 Spring Security 做认证和鉴权使用。
      */
     UserDetails loadUserByUsername(String username);
 }

@@ -5,6 +5,26 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 会员成长值变更历史实体类
+ * <p>
+ * 对应数据库表 ums_growth_change_history，记录会员成长值的每次变动详情，
+ * 包括购物获取成长值、管理员手动调整等场景，用于成长值流水追踪和会员等级升降级计算。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>memberId - 会员ID，关联 UmsMember.id</li>
+ *   <li>createTime - 变更时间</li>
+ *   <li>changeType - 变更类型：0->增加；1->减少</li>
+ *   <li>changeCount - 成长值变更数量</li>
+ *   <li>operateMan - 操作人员</li>
+ *   <li>operateNote - 操作备注</li>
+ *   <li>sourceType - 成长值来源：0->购物；1->管理员修改</li>
+ * </ul>
+ * </p>
+ */
 public class UmsGrowthChangeHistory implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

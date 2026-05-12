@@ -5,6 +5,28 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台管理员实体类
+ * <p>
+ * 对应数据库表 ums_admin，存储后台管理系统的用户账号信息。
+ * 管理员通过角色和权限体系控制对后台资源的访问，是 RBAC 权限模型的核心主体。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>username - 用户名，登录凭证</li>
+ *   <li>password - 密码，加密存储</li>
+ *   <li>icon - 头像URL</li>
+ *   <li>email - 邮箱地址</li>
+ *   <li>nickName - 昵称</li>
+ *   <li>note - 备注信息</li>
+ *   <li>createTime - 账号创建时间</li>
+ *   <li>loginTime - 最后登录时间</li>
+ *   <li>status - 帐号启用状态：0->禁用；1->启用</li>
+ * </ul>
+ * </p>
+ */
 public class UmsAdmin implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

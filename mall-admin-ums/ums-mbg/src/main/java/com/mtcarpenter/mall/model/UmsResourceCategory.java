@@ -5,6 +5,23 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台资源分类实体类
+ * <p>
+ * 对应数据库表 ums_resource_category，对后台 API 资源进行分类管理，
+ * 便于在后台管理界面中按分类组织和展示资源列表，简化权限配置操作。
+ * 例如可分为"商品模块"、"订单模块"、"用户模块"等分类。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>createTime - 创建时间</li>
+ *   <li>name - 分类名称</li>
+ *   <li>sort - 排序</li>
+ * </ul>
+ * </p>
+ */
 public class UmsResourceCategory implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

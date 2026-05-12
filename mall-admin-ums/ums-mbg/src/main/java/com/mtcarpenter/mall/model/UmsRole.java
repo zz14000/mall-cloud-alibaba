@@ -5,6 +5,26 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * 后台角色实体类
+ * <p>
+ * 对应数据库表 ums_role，定义后台管理系统的角色信息，是 RBAC 权限模型的核心。
+ * 角色作为管理员与权限/菜单/资源之间的桥梁，管理员通过分配角色来获取对应的权限集合，
+ * 实现权限的批量管理和灵活配置。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>name - 角色名称</li>
+ *   <li>description - 角色描述</li>
+ *   <li>adminCount - 拥有该角色的后台用户数量</li>
+ *   <li>createTime - 创建时间</li>
+ *   <li>status - 启用状态：0->禁用；1->启用</li>
+ *   <li>sort - 排序</li>
+ * </ul>
+ * </p>
+ */
 public class UmsRole implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

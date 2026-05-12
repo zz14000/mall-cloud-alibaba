@@ -4,6 +4,24 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
+/**
+ * 会员任务实体类
+ * <p>
+ * 对应数据库表 ums_member_task，定义会员可完成的任务及其奖励规则，
+ * 包括新手任务和日常任务。会员完成任务后可获得成长值和积分奖励，
+ * 用于提升会员活跃度和留存率。
+ * </p>
+ * <p>
+ * 包含字段：
+ * <ul>
+ *   <li>id - 主键ID</li>
+ *   <li>name - 任务名称</li>
+ *   <li>growth - 完成任务赠送的成长值</li>
+ *   <li>intergration - 完成任务赠送的积分</li>
+ *   <li>type - 任务类型：0->新手任务；1->日常任务</li>
+ * </ul>
+ * </p>
+ */
 public class UmsMemberTask implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;

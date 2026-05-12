@@ -17,6 +17,13 @@ import java.util.Iterator;
  */
 public class DynamicAccessDecisionManager implements AccessDecisionManager {
 
+    /**
+     * 用户权限列表：["1:商品添加", "3:商品删除", "5:订单查询"]
+     *接口所需权限：["1:商品添加"]
+     * 遍历比对：
+     *  "1:商品添加" == "1:商品添加" ✅ 匹配成功 → 放行
+     *  如果全部不匹配 → 抛出 AccessDeniedException
+     */
     @Override
     public void decide(Authentication authentication, Object object,
                        Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException {
