@@ -39,7 +39,7 @@ public class PmsProductCategoryServiceImpl implements PmsProductCategoryService 
         PmsProductCategory productCategory = new PmsProductCategory();
         productCategory.setProductCount(0);
         BeanUtils.copyProperties(pmsProductCategoryParam, productCategory);
-        //没有父分类时为一级分类
+        //设置分类级别，函数位置在本类最下面
         setCategoryLevel(productCategory);
         int count = productCategoryMapper.insertSelective(productCategory);
         //创建筛选属性关联
@@ -51,7 +51,7 @@ public class PmsProductCategoryServiceImpl implements PmsProductCategoryService 
     }
 
     /**
-     * 批量插入商品分类与筛选属性关系表
+     * 批量插入商品分类与属性中间表
      * @param productCategoryId 商品分类id
      * @param productAttributeIdList 相关商品筛选属性id集合
      */
@@ -146,7 +146,7 @@ public class PmsProductCategoryServiceImpl implements PmsProductCategoryService 
             PmsProductCategory parentCategory = productCategoryMapper.selectByPrimaryKey(productCategory.getParentId());
             if (parentCategory != null) {
                 productCategory.setLevel(parentCategory.getLevel() + 1);
-            } else {
+            } else {       //防止脏数据导致程序异常，兜底的
                 productCategory.setLevel(0);
             }
         }

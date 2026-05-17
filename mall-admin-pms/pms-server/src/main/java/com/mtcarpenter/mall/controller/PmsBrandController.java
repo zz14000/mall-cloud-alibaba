@@ -16,7 +16,61 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 品牌功能Controller
+ * 商品品牌管理 Controller
+ * 
+ * 功能说明：
+ * 用于管理商城系统中的商品品牌信息，包括品牌的增删改查、批量操作等功能。
+ * 品牌是商品的重要属性，如：华为、苹果、小米、耐克等。
+ * 
+ * 主要功能：
+ * 1. 品牌列表查询（支持分页和按名称搜索）
+ * 2. 品牌详情查询
+ * 3. 品牌新增、更新、删除
+ * 4. 批量操作：批量删除、批量更新显示状态、批量更新厂家制造商状态
+ * 
+ * 使用示例：
+ * 1. 获取所有品牌列表：GET /brand/listAll
+ *    返回：所有品牌信息列表
+ * 
+ * 2. 分页查询品牌：GET /brand/list?keyword=华为&pageNum=1&pageSize=5
+ *    参数：keyword - 品牌名称关键词（可选）
+ *          pageNum - 页码，默认 1
+ *          pageSize - 每页数量，默认 5
+ *    返回：分页后的品牌列表
+ * 
+ * 3. 添加品牌：POST /brand/create
+ *    请求体：{
+ *              "name": "华为",
+ *              "firstLetter": "H",
+ *              "sort": 100,
+ *              "factoryStatus": 1,      // 是否为品牌制造商：0->不是；1->是
+ *              "showStatus": 1,         // 是否显示：0-> 不显示；1-> 显示
+ *              "productCount": 0,
+ *              "productCommentCount": 0,
+ *              "logo": "http://example.com/logo.png",
+ *              "subTitle": "华为 - 构建万物互联的智能世界",
+ *              "description": "华为技术有限公司"
+ *            }
+ *    返回：操作结果
+ * 
+ * 4. 更新品牌：POST /brand/update/{id}
+ *    路径参数：id - 品牌 ID
+ *    请求体：同创建品牌的请求体格式
+ * 
+ * 5. 删除品牌：GET /brand/delete/{id}
+ *    路径参数：id - 品牌 ID
+ * 
+ * 6. 批量删除品牌：POST /brand/delete/batch?ids=1,2,3
+ *    参数：ids - 品牌 ID 列表，逗号分隔
+ * 
+ * 7. 批量更新显示状态：POST /brand/update/showStatus?ids=1,2,3&showStatus=1
+ *    参数：ids - 品牌 ID 列表
+ *          showStatus - 显示状态：0->不显示；1->显示
+ * 
+ * 8. 批量更新厂家制造商状态：POST /brand/update/factoryStatus?ids=1,2,3&factoryStatus=1
+ *    参数：ids - 品牌 ID 列表
+ *          factoryStatus - 是否为品牌制造商：0->不是；1->是
+ * 
  * Created by macro on 2018/4/26.
  */
 @Controller

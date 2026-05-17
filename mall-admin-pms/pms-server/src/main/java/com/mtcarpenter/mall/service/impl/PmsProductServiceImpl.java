@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -105,6 +105,11 @@ public class PmsProductServiceImpl implements PmsProductService {
         return count;
     }
 
+    /**
+     * 处理sku的编码，保证每个sku的编码都是唯一的，格式为：yyyyMMdd商品id索引id
+     * @param skuStockList
+     * @param productId
+     */
     private void handleSkuStockCode(List<PmsSkuStock> skuStockList, Long productId) {
         if (CollectionUtils.isEmpty(skuStockList)) return;
         for (int i = 0; i < skuStockList.size(); i++) {
@@ -123,27 +128,80 @@ public class PmsProductServiceImpl implements PmsProductService {
         }
     }
 
+    
+    /**
+     * 获取商品更新信息（用于编辑页面回显）
+     * 
+     * 方法功能：
+     * 1. 查询商品基本信息（包含 SKU、属性、会员价格、阶梯价格、满减价格等）
+     * 2. 通过 Feign 调用 CMS 服务，获取商品关联的专题信息
+     * 3. 通过 Feign 调用 CMS 服务，获取商品关联的优选专区信息
+     * 4. 将所有信息整合到 PmsProductResult 对象中返回
+     * 
+     * 调用场景：
+     * - 后台管理系统点击"编辑商品"时，前端调用此接口获取商品完整信息
+     * - API: GET /product/updateInfo/{id}
+     * 
+     * 数据组成：
+     * - 商品主表信息（pms_product）：名称、价格、库存、详情等
+     * - 商品 SKU 信息（pms_sku_stock）：多个规格组合的价格和库存
+     * - 商品属性值（pms_product_attribute_value）：商品的规格参数值
+     * - 会员价格（pms_member_price）：不同会员等级的价格
+     * - 阶梯价格（pms_product_ladder）：购买数量达到一定值的优惠价格
+     * - 满减价格（pms_product_full_reduction）：满多少减多少的促销价格
+     * - 专题关联（cms_subject_product_relation）：商品所属专题（来自 CMS 服务）
+     * - 优选关联（cms_prefrence_area_product_relation）：商品所属优选专区（来自 CMS 服务）
+     * 
+     * @param id 商品 ID
+     * @return PmsProductResult 包含商品完整信息的对象，用于编辑表单回显
+     */
     @Override
     public PmsProductResult getUpdateInfo(Long id) {
+        // 步骤 1: 查询商品基本信息及其关联数据（SKU、属性、价格策略等）
+        // 调用自定义 DAO，执行多表联查（见 PmsProductDao.xml 中的 getUpdateInfo 映射）
+        //PmsProductResult继承PmsProductParam，PmsProductParam继承PmsProduct（商品主表）
         PmsProductResult updateInfo = productDao.getUpdateInfo(id);
 
-        CommonResult<List<CmsSubjectProductRelationInput>> listCommonResult = cmsSubjectProductRelationClient.relationByProductId(id);
+        // 步骤 2: 通过 Feign 客户端调用 CMS 服务，获取商品关联的专题信息
+        // 这是跨微服务调用，PMS 服务调用 CMS 服务获取内容管理相关数据
+        CommonResult<List<CmsSubjectProductRelationInput>> listCommonResult = 
+            cmsSubjectProductRelationClient.relationByProductId(id);
+        
+        // 创建 Gson 对象用于 JSON 反序列化
         Gson gson = new Gson();
-        // 关联主题
+        
+        // 步骤 3: 处理专题关联数据
+        // 判断 CMS 服务调用是否成功
         if (listCommonResult.getCode() == ResultCode.SUCCESS.getCode()) {
-            List<CmsSubjectProductRelationInput> relationInputList = gson.fromJson(JSON.toJSONString(listCommonResult.getData()) ,
-                    new TypeToken<List<CmsSubjectProductRelationInput>>() {
-                    }.getType());
+            // 将 CMS 服务返回的数据转换为 List<CmsSubjectProductRelationInput>
+            // 转换过程：先将 Data 转为 JSON 字符串，再反序列化为目标类型
+            // 使用 TypeToken 是为了保留泛型类型信息（Gson 的类型擦除问题）
+            List<CmsSubjectProductRelationInput> relationInputList = gson.fromJson(
+                JSON.toJSONString(listCommonResult.getData()),
+                new TypeToken<List<CmsSubjectProductRelationInput>>() {
+                }.getType()
+            );
+            // 将专题关联信息设置到结果对象中
             updateInfo.setSubjectProductRelationList(relationInputList);
         }
-        // 关联优选
-        CommonResult<List<CmsPrefrenceAreaProductRelationInput>> commonResult = cmsPrefrenceAreaProductRelationClient.relationByProductId(id);
+        
+        // 步骤 4: 通过 Feign 客户端调用 CMS 服务，获取商品关联的优选专区信息
+        CommonResult<List<CmsPrefrenceAreaProductRelationInput>> commonResult = 
+            cmsPrefrenceAreaProductRelationClient.relationByProductId(id);
+        
+        // 步骤 5: 处理优选专区关联数据
         if (commonResult.getCode() == ResultCode.SUCCESS.getCode()) {
-            List<CmsPrefrenceAreaProductRelationInput> areaProductRelationInputs = gson.fromJson(JSON.toJSONString(commonResult.getData()),
-                    new TypeToken<List<CmsPrefrenceAreaProductRelationInput>>() {
-                    }.getType());
+            // 同样使用 Gson 进行 JSON 反序列化
+            List<CmsPrefrenceAreaProductRelationInput> areaProductRelationInputs = gson.fromJson(
+                JSON.toJSONString(commonResult.getData()),
+                new TypeToken<List<CmsPrefrenceAreaProductRelationInput>>() {
+                }.getType()
+            );
+            // 将优选专区关联信息设置到结果对象中
             updateInfo.setPrefrenceAreaProductRelationList(areaProductRelationInputs);
         }
+        
+        // 步骤 6: 返回完整的商品信息（包含所有关联数据）
         return updateInfo;
     }
 
@@ -154,6 +212,7 @@ public class PmsProductServiceImpl implements PmsProductService {
         PmsProduct product = productParam;
         product.setId(id);
         productMapper.updateByPrimaryKeySelective(product);
+        //更新商品参数，更改逻辑：先删除再插入
         //会员价格
         PmsMemberPriceExample pmsMemberPriceExample = new PmsMemberPriceExample();
         pmsMemberPriceExample.createCriteria().andProductIdEqualTo(id);
@@ -184,10 +243,15 @@ public class PmsProductServiceImpl implements PmsProductService {
         return count;
     }
 
+    /**
+     * 修改逻辑
+     * @param id
+     * @param productParam
+     */
     private void handleUpdateSkuStockList(Long id, PmsProductParam productParam) {
         //当前的sku信息
         List<PmsSkuStock> currSkuList = productParam.getSkuStockList();
-        //当前没有sku直接删除
+        //当前没有sku直接删除原来数据
         if (CollUtil.isEmpty(currSkuList)) {
             PmsSkuStockExample skuStockExample = new PmsSkuStockExample();
             skuStockExample.createCriteria().andProductIdEqualTo(id);
@@ -198,7 +262,7 @@ public class PmsProductServiceImpl implements PmsProductService {
         PmsSkuStockExample skuStockExample = new PmsSkuStockExample();
         skuStockExample.createCriteria().andProductIdEqualTo(id);
         List<PmsSkuStock> oriStuList = skuStockMapper.selectByExample(skuStockExample);
-        //获取新增sku信息
+        //获取新增sku信息，新增id为空
         List<PmsSkuStock> insertSkuList = currSkuList.stream().filter(item -> item.getId() == null).collect(Collectors.toList());
         //获取需要更新的sku信息
         List<PmsSkuStock> updateSkuList = currSkuList.stream().filter(item -> item.getId() != null).collect(Collectors.toList());
@@ -232,7 +296,9 @@ public class PmsProductServiceImpl implements PmsProductService {
         PageHelper.startPage(pageNum, pageSize);
         PmsProductExample productExample = new PmsProductExample();
         PmsProductExample.Criteria criteria = productExample.createCriteria();
+        //查询未删除的商品
         criteria.andDeleteStatusEqualTo(0);
+        //组装查询条件，根据商品状态、审核状态、关键词、商品编号、品牌id、商品分类id查询
         if (productQueryParam.getPublishStatus() != null) {
             criteria.andPublishStatusEqualTo(productQueryParam.getPublishStatus());
         }
@@ -262,14 +328,16 @@ public class PmsProductServiceImpl implements PmsProductService {
         example.createCriteria().andIdIn(ids);
         List<PmsProductVertifyRecord> list = new ArrayList<>();
         int count = productMapper.updateByExampleSelective(product, example);
-        //修改完审核状态后插入审核记录
+        //修改完审核状态后插入审核记录表
         for (Long id : ids) {
             PmsProductVertifyRecord record = new PmsProductVertifyRecord();
             record.setProductId(id);
             record.setCreateTime(new Date());
             record.setDetail(detail);
             record.setStatus(verifyStatus);
-            record.setVertifyMan("test");
+            //从SecurityContextHolder.getContext() 中获取当前登录用户
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            record.setVertifyMan(username);
             list.add(record);
         }
         productVertifyRecordDao.insertList(list);
@@ -325,7 +393,7 @@ public class PmsProductServiceImpl implements PmsProductService {
     }
 
     /**
-     * 根据 商品 id 过去商品信息
+     * 根据 商品 id获取商品信息
      *
      * @param productId
      * @return
@@ -347,14 +415,20 @@ public class PmsProductServiceImpl implements PmsProductService {
      */
     private void relateAndInsertList(Object dao, List dataList, Long productId) {
         try {
-            if (CollectionUtils.isEmpty(dataList)) return;
+            if (CollectionUtils.isEmpty(dataList)) return;  
             for (Object item : dataList) {
+                // 2.1 通过反射获取 setId 方法
                 Method setId = item.getClass().getMethod("setId", Long.class);
+                // 2.2 调用 setId 方法，将 ID 设为 null（新增数据不需要 ID）
                 setId.invoke(item, (Long) null);
+                // 2.3 通过反射获取 setProductId 方法
                 Method setProductId = item.getClass().getMethod("setProductId", Long.class);
+                // 2.4 调用 setProductId 方法，设置关联的商品 ID
                 setProductId.invoke(item, productId);
             }
+            // 步骤 3: 通过反射获取 DAO 的 insertList 方法
             Method insertList = dao.getClass().getMethod("insertList", List.class);
+            // 步骤 4: 调用 insertList 方法，批量插入数据
             insertList.invoke(dao, dataList);
         } catch (Exception e) {
             LOGGER.warn("创建产品出错:{}", e.getMessage());
