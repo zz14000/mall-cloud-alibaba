@@ -38,6 +38,11 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
         return productAttributeMapper.selectByExample(example);
     }
 
+    /**
+     *
+     * @param pmsProductAttributeParam 里面有属性分类id
+     * @return
+     */
     @Override
     public int create(PmsProductAttributeParam pmsProductAttributeParam) {
         PmsProductAttribute pmsProductAttribute = new PmsProductAttribute();
@@ -69,14 +74,15 @@ public class PmsProductAttributeServiceImpl implements PmsProductAttributeServic
 
     @Override
     public int delete(List<Long> ids) {
-        //获取分类
+        //查询是属性还参数
         PmsProductAttribute pmsProductAttribute = productAttributeMapper.selectByPrimaryKey(ids.get(0));
         Integer type = pmsProductAttribute.getType();
         PmsProductAttributeCategory pmsProductAttributeCategory = productAttributeCategoryMapper.selectByPrimaryKey(pmsProductAttribute.getProductAttributeCategoryId());
+        //批量删除属性
         PmsProductAttributeExample example = new PmsProductAttributeExample();
         example.createCriteria().andIdIn(ids);
         int count = productAttributeMapper.deleteByExample(example);
-        //删除完成后修改数量
+        //修改对应属性分类的属性或者参数数量
         if(type==0){
             if(pmsProductAttributeCategory.getAttributeCount()>=count){
                 pmsProductAttributeCategory.setAttributeCount(pmsProductAttributeCategory.getAttributeCount()-count);
