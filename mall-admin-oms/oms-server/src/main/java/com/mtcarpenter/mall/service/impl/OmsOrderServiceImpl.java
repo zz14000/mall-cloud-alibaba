@@ -11,6 +11,7 @@ import com.mtcarpenter.mall.model.OmsOrderExample;
 import com.mtcarpenter.mall.model.OmsOrderOperateHistory;
 import com.mtcarpenter.mall.service.OmsOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -48,7 +49,9 @@ public class OmsOrderServiceImpl implements OmsOrderService {
                     OmsOrderOperateHistory history = new OmsOrderOperateHistory();
                     history.setOrderId(omsOrderDeliveryParam.getOrderId());
                     history.setCreateTime(new Date());
-                    history.setOperateMan("后台管理员");
+                    //从security上下文获取用户名，极简写法，不安全，没有登录时使用会报空指针异常
+                    //String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                    history.setOperateMan("username");
                     history.setOrderStatus(2);
                     history.setNote("完成发货");
                     return history;
