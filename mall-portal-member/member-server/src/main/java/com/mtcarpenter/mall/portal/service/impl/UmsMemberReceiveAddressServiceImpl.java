@@ -42,18 +42,24 @@ public class UmsMemberReceiveAddressServiceImpl implements UmsMemberReceiveAddre
     public int update(Long id, UmsMemberReceiveAddress address) {
         address.setId(null);
         UmsMember currentMember = memberService.getCurrentMember();
+        //构建更新对象
         UmsMemberReceiveAddressExample example = new UmsMemberReceiveAddressExample();
+        //防御式编程 + 权限隔离，只有两个id对的上才会进行记录修改
         example.createCriteria().andMemberIdEqualTo(currentMember.getId()).andIdEqualTo(id);
-        if (address.getDefaultStatus() == 1) {
+        if (address.getDefaultStatus() == 1) {//如果用户修改了默认地址
             //先将原来的默认地址去除
             UmsMemberReceiveAddress record = new UmsMemberReceiveAddress();
             record.setDefaultStatus(0);
             UmsMemberReceiveAddressExample updateExample = new UmsMemberReceiveAddressExample();
+            //构建能找到当前用户原默认地址的记录的example
             updateExample.createCriteria()
+                    //不能使用传入的id字段，不安全
                     .andMemberIdEqualTo(currentMember.getId())
                     .andDefaultStatusEqualTo(1);
+            //把原默认地址的默认标识去掉
             addressMapper.updateByExampleSelective(record, updateExample);
         }
+        //修改传入的地址
         return addressMapper.updateByExampleSelective(address, example);
     }
 

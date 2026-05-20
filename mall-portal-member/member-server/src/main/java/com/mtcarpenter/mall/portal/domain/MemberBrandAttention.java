@@ -8,13 +8,17 @@ import java.util.Date;
 
 /**
  * 会员关注的品牌
+ * @Document 表示这是一个类，用于映射 MongoDB 中的文档
  * Created by macro on 2018/8/2.
  */
 @Document
 public class MemberBrandAttention {
+    // 主键
+    // 用于唯一标识每个会员关注的品牌记录
     @Id
     private String id;
-    @Indexed
+
+    @Indexed    //给字段加索引
     private Long memberId;
     private String memberNickname;
     private String memberIcon;

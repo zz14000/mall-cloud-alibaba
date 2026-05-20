@@ -99,9 +99,13 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         umsMember.setStatus(1);
         //获取默认会员等级并设置
         UmsMemberLevelExample levelExample = new UmsMemberLevelExample();
+        // 2. 设置查询条件：查找 default_status = 1 的记录
         levelExample.createCriteria().andDefaultStatusEqualTo(1);
+        // 3. 执行查询，从 member_level 表中获取所有默认等级为 1 的会员等级记录
         List<UmsMemberLevel> memberLevelList = memberLevelMapper.selectByExample(levelExample);
         if (!CollectionUtils.isEmpty(memberLevelList)) {
+            // 5. 取第一条记录的 id
+            // 6. 将 umsMember 对象的 memberLevelId 属性设置为这个 id
             umsMember.setMemberLevelId(memberLevelList.get(0).getId());
         }
         memberMapper.insert(umsMember);

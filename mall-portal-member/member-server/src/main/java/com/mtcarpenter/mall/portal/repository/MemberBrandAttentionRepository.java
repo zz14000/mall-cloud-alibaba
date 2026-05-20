@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
  * 会员关注Repository
+ * 你没有写 SQL，也没有写 Mongo 查询语句，但 Spring Data 会根据方法名自动生成查询。
  * Created by macro on 2018/8/2.
  */
 public interface MemberBrandAttentionRepository extends MongoRepository<MemberBrandAttention, String> {

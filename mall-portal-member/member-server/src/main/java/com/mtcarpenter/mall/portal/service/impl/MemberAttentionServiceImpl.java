@@ -29,6 +29,7 @@ public class MemberAttentionServiceImpl implements MemberAttentionService {
         memberBrandAttention.setMemberId(member.getId());
         memberBrandAttention.setMemberNickname(member.getNickname());
         memberBrandAttention.setMemberIcon(member.getIcon());
+        //先查，如果mongoDB里没有这条数据，再写入
         MemberBrandAttention findAttention = memberBrandAttentionRepository.findByMemberIdAndBrandId(memberBrandAttention.getMemberId(), memberBrandAttention.getBrandId());
         if (findAttention == null) {
             memberBrandAttentionRepository.save(memberBrandAttention);
