@@ -96,7 +96,7 @@ public class UmsAdminController {
      * 获取当前登录用户信息
      * 从 SecurityContextHolder 中获取当前登录用户信息
      * 从 SecurityContextHolder 中获取当前登录用户信息
-     * pring MVC 在处理请求时，会自动检测控制器方法参数的类型。
+     * spring MVC 在处理请求时，会自动检测控制器方法参数的类型。
      * 当发现参数类型是 Principal 时，
      * Spring Security 会从 SecurityContextHolder 中取出当前已认证的用户信息，自动注入
      * @param principal 当前登录用户信息

@@ -77,7 +77,7 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     public UmsAdmin getAdminByUsername(String username) {
         UmsAdmin admin = adminCacheService.getAdmin(username);  //从缓存中拿
         if(admin!=null) return  admin;
-        //从数据库中差
+        //从数据库中查，再放入缓存
         UmsAdminExample example = new UmsAdminExample();
         example.createCriteria().andUsernameEqualTo(username);
         List<UmsAdmin> adminList = adminMapper.selectByExample(example);
@@ -110,7 +110,9 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     }
 
     /**
-     * 此时的 setAuthentication 作用
+     * 此时的 setAuthentication 作用，生命周期很短，登录请求结束后就被清除了，
+     * 原因是threadLocal使用的是线程级并发，不及时清理会导致当前线程访问到它不该访问的资源
+     * 造成内存泄漏
      * - 让当前登录线程知道"这个用户已认证"
      * - 后续操作（如生成 Token、记录日志）可以获取用户信息
      */
@@ -119,17 +121,20 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         String token = null;
         //密码需要客户端加密后传递
         try {
+            //构建UserDetails对象
             UserDetails userDetails = loadUserByUsername(username);
             if(!passwordEncoder.matches(password,userDetails.getPassword())){
                 throw new BadCredentialsException("密码不正确");
             }
             //构建认证令牌
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            //放入安全上下文，后续请求即可获取到当前用户信息
+            //放入安全上下文，后续登录生命周期内的请求即可获取到当前用户信息
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            //第一处使用
             token = jwtTokenUtil.generateToken(userDetails);
-//            updateLoginTimeByUsername(username);
+            //updateLoginTimeByUsername(username);
             adminCacheService.setToken(username, tokenHead+token);
+            //第2处使用
             insertLoginLog(username);
         } catch (AuthenticationException e) {
             LOGGER.warn("登录异常:{}", e.getMessage());
@@ -243,6 +248,7 @@ public class UmsAdminServiceImpl implements UmsAdminService {
 
     @Override
     public List<UmsResource> getResourceList(Long adminId) {
+        //先从缓存中查，没有再去数据库查
         List<UmsResource> resourceList = adminCacheService.getResourceList(adminId);
         if(CollUtil.isNotEmpty(resourceList)){
             return  resourceList;
@@ -332,6 +338,7 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         //获取用户信息
         UmsAdmin admin = getAdminByUsername(username);
         if (admin != null) {
+            //getResourceList也是本类中的一个函数
             List<UmsResource> resourceList = getResourceList(admin.getId());
             return new AdminUserDetails(admin,resourceList);
         }

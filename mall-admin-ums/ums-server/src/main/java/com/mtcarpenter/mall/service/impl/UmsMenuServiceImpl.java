@@ -77,7 +77,9 @@ public class UmsMenuServiceImpl implements UmsMenuService {
     public List<UmsMenuNode> treeList() {
         List<UmsMenu> menuList = menuMapper.selectByExample(new UmsMenuExample());
         List<UmsMenuNode> result = menuList.stream()
+                //提取出所有一级菜单
                 .filter(menu -> menu.getParentId().equals(0L))
+                //遍历一级菜单，递归构造它的子菜单
                 .map(menu -> covertMenuNode(menu, menuList)).collect(Collectors.toList());
         return result;
     }
@@ -97,7 +99,9 @@ public class UmsMenuServiceImpl implements UmsMenuService {
         UmsMenuNode node = new UmsMenuNode();
         BeanUtils.copyProperties(menu, node);
         List<UmsMenuNode> children = menuList.stream()
+                //遍历提取出所有parentId等于传入菜单id的菜单
                 .filter(subMenu -> subMenu.getParentId().equals(menu.getId()))
+                //遍历上一步提取出来的菜单，递归构造它的子菜单
                 .map(subMenu -> covertMenuNode(subMenu, menuList)).collect(Collectors.toList());
         node.setChildren(children);
         return node;

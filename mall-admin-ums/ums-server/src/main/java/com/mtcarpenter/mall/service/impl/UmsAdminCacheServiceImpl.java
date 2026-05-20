@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * UmsAdminCacheService实现类
- * Created by macro on 2020/3/13.
+ * redis key命名规则，其中{key_prefix}里面包含了{业务模块}和{数据类型}，{标识}里面存放的是id类字段，可以唯一定位一个资源
+ *{database}:{key_prefix}:{identifier}
+ * {database}:{业务模块}:{数据类型}:{标识}
  */
 @Service
 public class UmsAdminCacheServiceImpl implements UmsAdminCacheService {
@@ -59,6 +60,10 @@ public class UmsAdminCacheServiceImpl implements UmsAdminCacheService {
         redisService.del(key);
     }
 
+    /**
+     * 当角色的资源发生变化时，删除所有拥有该角色的用户的资源列表缓存 ，确保他们下次访问时能获取到最新的权限配置。
+     * @param roleId
+     */
     @Override
     public void delResourceListByRole(Long roleId) {
         UmsAdminRoleRelationExample example = new UmsAdminRoleRelationExample();
@@ -66,7 +71,8 @@ public class UmsAdminCacheServiceImpl implements UmsAdminCacheService {
         List<UmsAdminRoleRelation> relationList = adminRoleRelationMapper.selectByExample(example);
         if (CollUtil.isNotEmpty(relationList)) {
             String keyPrefix = REDIS_DATABASE + ":" + REDIS_KEY_RESOURCE_LIST + ":";
-            List<String> keys = relationList.stream().map(relation -> keyPrefix + relation.getAdminId()).collect(Collectors.toList());
+            List<String> keys = relationList.stream()
+                    .map(relation -> keyPrefix + relation.getAdminId()).collect(Collectors.toList());
             redisService.del(keys);
         }
     }
@@ -78,7 +84,8 @@ public class UmsAdminCacheServiceImpl implements UmsAdminCacheService {
         List<UmsAdminRoleRelation> relationList = adminRoleRelationMapper.selectByExample(example);
         if (CollUtil.isNotEmpty(relationList)) {
             String keyPrefix = REDIS_DATABASE + ":" + REDIS_KEY_RESOURCE_LIST + ":";
-            List<String> keys = relationList.stream().map(relation -> keyPrefix + relation.getAdminId()).collect(Collectors.toList());
+            List<String> keys = relationList.stream()
+                    .map(relation -> keyPrefix + relation.getAdminId()).collect(Collectors.toList());
             redisService.del(keys);
         }
     }
