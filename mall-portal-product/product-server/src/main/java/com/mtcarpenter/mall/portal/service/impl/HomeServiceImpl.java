@@ -101,6 +101,12 @@ public class HomeServiceImpl implements HomeService {
         return homeDao.getNewProductList(offset, pageSize);
     }
 
+    /**
+     * 获取首页秒杀信息
+     * 先通过两个远程feign调用，查询本场开始结束时间，下一场开始结束时间
+     * 再通过sms_flash_promotion_product_relation和product表的连接，查询本秒杀活动的商品
+     * @return
+     */
     private HomeFlashPromotion getHomeFlashPromotion() {
         HomeFlashPromotion homeFlashPromotion = new HomeFlashPromotion();
         //获取当前秒杀活动

@@ -75,6 +75,12 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         return productMapper.selectByExample(example);
     }
 
+    /**
+     * 和创建后台树形目录一样的做法
+     * 先遍历取出所有ParentId等于0的一级分类
+     * 再把一级分类传入covert函数，函数中先构建本分类的node形式，再递归构建本分类的子分类
+     * @return
+     */
     @Override
     public List<PmsProductCategoryNode> categoryTreeList() {
         PmsProductCategoryExample example = new PmsProductCategoryExample();
@@ -157,7 +163,7 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
 
     /**
      * 锁定下单商品的所有库存
-     *
+     *这只是简单的累加，真正的并发控制在订单模块
      * @param productSkuId
      * @param quantity
      * @return
