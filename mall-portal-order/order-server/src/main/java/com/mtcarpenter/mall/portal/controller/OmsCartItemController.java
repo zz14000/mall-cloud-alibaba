@@ -53,6 +53,11 @@ public class OmsCartItemController {
         return CommonResult.success(cartItemList);
     }
 
+    /**
+     *
+     * @param cartIds 用户选择结算的商品列表
+     * @return
+     */
     @ApiOperation("获取某个会员的购物车列表,包括促销信息")
     @RequestMapping(value = "/list/promotion", method = RequestMethod.GET)
     @ResponseBody

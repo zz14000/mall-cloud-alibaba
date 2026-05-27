@@ -1,0 +1,14 @@
+生成订单步骤
+传入参数OrderParam携带信息有收货地址id，优惠卷id，使用积分数，支付方式和最重要的被选中的购物车商品id
+1.从redis中获取用户信息
+2.获取带优惠信息（全场通用，指定分类，指定商品），附赠积分，成长值，优惠金额，真实库存的购物车列表cartPromotionItem
+3.遍历cartPromotionItem，组装订单商品信息表，把静态的信息填入（有管商品的，积分，成长值）
+4.判断是否有库存，只是去查询了cartPromotionItem的realStock字段，不涉及锁
+5.优惠卷处理。没使用（即orderParam的couponId为nll）,直接设置orderItem的couponAmount为0。使用情况下，先根据cartPromotionItemList和couponId查询对应的优惠卷信息，如果为null，打印信息（不可以），可用情况下，调用handleCouponAmount函数，根据优惠卷类型，查询出对应的couponOrderItemList，再调用calcPerCouponAmount函数，把优惠卷平摊到每一个订单商品orderItem上，即orderItem.couponAmount的值等与(商品价格/可用商品总价)*优惠券面额
+6.积分处理。没使用，直接设置积分折扣金额为0，使用情况下，调用getUseIntegrationAmount函数，获取integrationAmount，getUseIntegrationAmount函数需要的参数useIntegration为用户下单时填报的、想要消耗的积分数量 ！函数部会先校验用户是否有useIntegration这么多积分，再判断是否可与优惠卷共用，是否达到最低门槛，是否超过抵用最高百分比。最后会把integrationAmount平摊到每一个订单商品
+7.计算实付金额。原价-促销优惠-优惠券抵扣-积分抵扣，其中促销金额计算在OmsPromotionServiceImpl中，使用中的促销方式有单品促销，打折促销，满减促销。在创建cartPromotionItemList时，就已经把促销信息写入，不用再次计算。优惠卷和积分抵扣在前面已经计算了。
+2~7都是在维护订单商品信息表orderItemList
+8.维护订单表order，根据商品合计、运费、活动优惠、优惠券、积分计算应付金额
+9.插入order表和order_item表到数据库
+10.更新优惠卷，积分，购物车
+11.发送延迟信息取消订单

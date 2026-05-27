@@ -60,8 +60,8 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
                 }
             } else if (promotionType == 3) {
                 //打折优惠
-                int count = getCartItemCount(itemList);
-                PmsProductLadder ladder = getProductLadder(count, promotionProduct.getProductLadderList());
+                int count = getCartItemCount(itemList);//商品数量
+                PmsProductLadder ladder = getProductLadder(count, promotionProduct.getProductLadderList());//根据商品数量获取折扣
                 if(ladder!=null){
                     for (OmsCartItem item : itemList) {
                         CartPromotionItem cartPromotionItem = new CartPromotionItem();
@@ -91,10 +91,10 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
                         BeanUtils.copyProperties(item,cartPromotionItem);
                         String message = getFullReductionPromotionMessage(fullReduction);
                         cartPromotionItem.setPromotionMessage(message);
-                        //(商品原价/总价)*满减金额
                         PmsSkuStock skuStock= getOriginalPrice(promotionProduct, item.getProductSkuId());
                         BigDecimal originalPrice = skuStock.getPrice();
-                        BigDecimal reduceAmount = originalPrice.divide(totalAmount,RoundingMode.HALF_EVEN).multiply(fullReduction.getReducePrice());
+                        //(商品原价×数量 / 该SPU所有SKU总价) × 满减金额，按商品金额占比分摊满减优惠
+                        BigDecimal reduceAmount = originalPrice.multiply(new BigDecimal(item.getQuantity())).divide(totalAmount,RoundingMode.HALF_EVEN).multiply(fullReduction.getReducePrice());
                         cartPromotionItem.setReduceAmount(reduceAmount);
                         cartPromotionItem.setRealStock(skuStock.getStock()-skuStock.getLockStock());
                         cartPromotionItem.setIntegration(promotionProduct.getGiftPoint());
@@ -113,7 +113,7 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
     }
 
     /**
-     * 查询所有商品的优惠相关信息
+     * 查询所有商品的优惠相关信息，通过feign调用前台product模块得到
      */
     private List<PromotionProduct> getPromotionProductList(List<OmsCartItem> cartItemList) {
         List<Long> productIdList = new ArrayList<>();
@@ -124,10 +124,11 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
     }
 
     /**
-     * 以spu为单位对购物车中商品进行分组
+     * 以spu为单位对购物车中商品进行分组，就是根据productId进行分组
      */
     private Map<Long, List<OmsCartItem>> groupCartItemBySpu(List<OmsCartItem> cartItemList) {
-        Map<Long, List<OmsCartItem>> productCartMap = new TreeMap<>();
+        Map<Long, List<OmsCartItem>> productCartMap = new TreeMap<>();//TreeMap有序键值对
+        //遍历购物车，此项记录在map中直接add，不在先创建键值对再put
         for (OmsCartItem cartItem : cartItemList) {
             List<OmsCartItem> productCartItemList = productCartMap.get(cartItem.getProductId());
             if (productCartItemList == null) {

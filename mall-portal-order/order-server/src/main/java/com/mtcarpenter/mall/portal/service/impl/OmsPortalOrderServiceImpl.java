@@ -90,8 +90,9 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
         ConfirmOrderResult result = new ConfirmOrderResult();
-        //获取购物车信息 redis 中获取
+        //从redis中获取用户信息
         UmsMember currentMember = memberUtil.getRedisUmsMember(request);
+        //获取包含优惠信息的购物车信息
         List<CartPromotionItem> cartPromotionItemList = cartItemService.listPromotion(currentMember.getId(), cartIds);
         result.setCartPromotionItemList(cartPromotionItemList);
         //获取用户收货地址列表
@@ -114,7 +115,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     @Override
     public Map<String, Object> generateOrder(OrderParam orderParam) {
         List<OmsOrderItem> orderItemList = new ArrayList<>();
-        //获取购物车及优惠信息  redis
+        //获取购物车及优惠信息  会员信息从redis中拿
         UmsMember currentMember = memberUtil.getRedisUmsMember(request);
         List<CartPromotionItem> cartPromotionItemList = cartItemService.listPromotion(currentMember.getId(), orderParam.getCartIds());
         for (CartPromotionItem cartPromotionItem : cartPromotionItemList) {
@@ -571,7 +572,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     /**
      * 获取可用积分抵扣金额
      *
-     * @param useIntegration 使用的积分数量
+     * @param useIntegration 用户下单时填报的、想要消耗的积分数量 ！
      * @param totalAmount    订单总金额
      * @param currentMember  使用的用户
      * @param hasCoupon      是否已经使用优惠券
@@ -632,7 +633,9 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private void calcPerCouponAmount(List<OmsOrderItem> orderItemList, SmsCoupon coupon) {
         BigDecimal totalAmount = calcTotalAmount(orderItemList);
         for (OmsOrderItem orderItem : orderItemList) {
-            //(商品价格/可用商品总价)*优惠券面额
+            //(商品价格/可用商品总价)*优惠券面额，按商品金额占比分摊优惠券面额
+            //divide(totalAmount, 3, RoundingMode.HALF_EVEN)，divide除法运算，3表示小数点后三位，RoundingMode.HALF_EVEN表示银行家算法（四舍五入）
+            //multiply(coupon.getAmount())乘以优惠卷面额
             BigDecimal couponAmount = orderItem.getProductPrice().divide(totalAmount, 3, RoundingMode.HALF_EVEN).multiply(coupon.getAmount());
             orderItem.setCouponAmount(couponAmount);
         }
@@ -712,7 +715,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     /**
-     * 判断下单商品是否都有库存
+     * 判断下单商品是否都有库存，简单判断，不涉及锁
      */
     private boolean hasStock(List<CartPromotionItem> cartPromotionItemList) {
         for (CartPromotionItem cartPromotionItem : cartPromotionItemList) {
@@ -724,7 +727,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     /**
-     * 计算购物车中商品的价格
+     * 计算购物车中商品的价格，分别求出总金额和优惠金额，再相减
      */
     private ConfirmOrderResult.CalcAmount calcCartAmount(List<CartPromotionItem> cartPromotionItemList) {
         ConfirmOrderResult.CalcAmount calcAmount = new ConfirmOrderResult.CalcAmount();

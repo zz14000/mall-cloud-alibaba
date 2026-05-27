@@ -12,9 +12,14 @@ SMS 模块主要包含以下核心数据表，分为三大业务板块：
 
 ### 2. 限时抢购（秒杀）板块
 - `sms_flash_promotion` - 限时购活动表
+
 - `sms_flash_promotion_session` - 限时购场次表
+
 - `sms_flash_promotion_product_relation` - 限时购与商品关系表
+
 - `sms_flash_promotion_log` - 限时购会员订阅日志表
+
+  **限时购活动表与限时购场次表之间没有关联关系，相互独立，限时购与商品关系表中包含活动id和场次id，来进行关联**
 
 ### 3. 首页推荐板块
 - `sms_home_advertise` - 首页广告轮播表

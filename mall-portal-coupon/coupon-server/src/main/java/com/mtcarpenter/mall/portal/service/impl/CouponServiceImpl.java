@@ -71,6 +71,7 @@ public class CouponServiceImpl implements CouponService {
             Asserts.fail("优惠券还没到领取时间");
         }
         //判断用户领取的优惠券数量是否超过限制
+        //通过优惠卷历史记录查询是否超领
         SmsCouponHistoryExample couponHistoryExample = new SmsCouponHistoryExample();
         couponHistoryExample.createCriteria().andCouponIdEqualTo(couponId).andMemberIdEqualTo(memberId);
         long count = couponHistoryMapper.countByExample(couponHistoryExample);
@@ -110,7 +111,7 @@ public class CouponServiceImpl implements CouponService {
 
     /**
      * 获取登录会员购物车的相关优惠券
-     *
+     *优惠卷返回顺序，满减，指定分类，指定商品
      * @param cartPromotionItemList
      * @param memberId
      * @param type
@@ -119,7 +120,7 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<SmsCouponHistoryDetail> listCart(List<CartPromotionItem> cartPromotionItemList, Long memberId, Integer type) {
         Date now = new Date();
-        //获取该用户所有优惠券
+        //获取该用户所有类型优惠券，全场通用，指定商品，指定品类，满减都在里面
         List<SmsCouponHistoryDetail> allList = couponHistoryDao.getDetailList(memberId);
         //根据优惠券使用类型来判断优惠券是否可用
         List<SmsCouponHistoryDetail> enableList = new ArrayList<>();
@@ -166,6 +167,7 @@ public class CouponServiceImpl implements CouponService {
                 }
             }
         }
+        //历史遗留问题，防御性编程，直接返回enableList也行
         if (type.equals(1)) {
             return enableList.stream().map(s -> {
                 SmsCouponHistoryDetail smsCouponHistoryDetail = new SmsCouponHistoryDetail();
@@ -210,7 +212,7 @@ public class CouponServiceImpl implements CouponService {
 
     /**
      * 商品优惠券
-     *
+     *获取可用的的所有优惠卷，使用了两个子查询
      * @param productId
      * @param productCategoryId
      * @return
@@ -222,7 +224,7 @@ public class CouponServiceImpl implements CouponService {
 
     /**
      * 获取下一个场次
-     *
+     *先获取所有时间大于传入时间的场次，排序，返回第一个
      * @param date
      * @return
      */

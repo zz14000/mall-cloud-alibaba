@@ -1,0 +1,8 @@
+下单操作最后会调用sendDelayMessageCancelOrder函数（是一个内部函数），里面操作为先查订单设置表获取超时时间，再调用cancelOrderSender.sendMessage（rabbitmq生产者）往延迟队列发送消息。
+
+有 CancelOrderReceiver作为消费者，监听死信队列，调用portalOrderService.cancelOrder删除用户未支付的订单。
+
+同时有一个定时任务，每10分钟扫描一次，调用portalOrderService.cancelTimeOutOrder取消订单
+
+为啥需要定时任务
+这是一个典型的冗余设计，保证在延迟队列异常情况下，有定时任务兜底，确保不会有大面积超时订单积压

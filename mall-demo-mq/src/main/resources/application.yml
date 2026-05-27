@@ -1,0 +1,41 @@
+server:
+  # 独立学习 demo 使用 8088，避免和现有业务服务端口冲突。
+  port: 8088
+
+spring:
+  application:
+    name: mall-demo-mq
+
+  rabbitmq:
+    # 本 demo 默认连接本机 RabbitMQ。先启动 RabbitMQ，再运行项目。
+    host: localhost
+    port: 5672
+    virtual-host: /
+    username: guest
+    password: guest
+
+    # 生产者确认：消息到达交换机后，RabbitMQ 会回调 ConfirmCallback。
+    # 这只能证明“消息到了交换机”，不能证明“消费者已经处理成功”。
+    publisher-confirms: true
+
+    # 退回通知：消息到了交换机，但根据 routing key 找不到队列时，触发 ReturnCallback。
+    publisher-returns: true
+
+    template:
+      # mandatory=true 时，无法路由的消息才会退回给生产者。
+      # 如果是 false，无法路由的消息可能直接被 RabbitMQ 丢弃，学习时不容易观察。
+      mandatory: true
+
+    listener:
+      simple:
+        # 手动 ack：消费者处理完成后自己告诉 RabbitMQ“这条消息可以删除了”。
+        # 这比自动 ack 更适合学习，因为能看清“消费成功”和“确认删除”是两个动作。
+        acknowledge-mode: manual
+
+        # 每个消费者一次只拿 1 条未确认消息，日志更容易按顺序观察。
+        prefetch: 1
+
+logging:
+  level:
+    root: info
+    com.mtcarpenter.mall.demo.mq: debug

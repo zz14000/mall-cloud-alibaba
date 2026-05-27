@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RabbitMQ Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            color: #172033;
+            background: #f5f7fb;
+        }
+
+        header {
+            padding: 28px 32px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #d9e0ec;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.7;
+            color: #5b667a;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: minmax(320px, 480px) minmax(360px, 1fr);
+            gap: 20px;
+            padding: 24px 32px 32px;
+        }
+
+        section {
+            background: #ffffff;
+            border: 1px solid #d9e0ec;
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        h2 {
+            margin: 0 0 14px;
+            font-size: 18px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 6px;
+            font-size: 13px;
+            color: #465167;
+        }
+
+        input {
+            width: 100%;
+            height: 38px;
+            padding: 8px 10px;
+            border: 1px solid #c8d1df;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            height: 38px;
+            margin: 12px 8px 0 0;
+            padding: 0 14px;
+            border: 0;
+            border-radius: 6px;
+            color: #ffffff;
+            background: #2563eb;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.secondary {
+            background: #475569;
+        }
+
+        button.warning {
+            background: #b45309;
+        }
+
+        pre {
+            min-height: 320px;
+            margin: 0;
+            padding: 14px;
+            overflow: auto;
+            border-radius: 8px;
+            color: #dbeafe;
+            background: #101827;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .hint {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 18px;
+            }
+
+            header {
+                padding: 22px 18px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>RabbitMQ 全流程 Demo</h1>
+    <p>这里的按钮会调用后端 POST 接口。接口清单可以看 <code>/demo-mq/apis</code>。</p>
+</header>
+
+<main>
+    <div>
+        <section>
+            <h2>普通消息</h2>
+            <label for="directContent">消息内容</label>
+            <input id="directContent" value="hello rabbitmq">
+            <button onclick="sendDirect()">发送普通消息</button>
+            <button class="warning" onclick="sendUnroutable()">发送无法路由消息</button>
+            <p class="hint">普通消息会被消费者 ack；无法路由消息会触发 ReturnCallback。</p>
+        </section>
+
+        <section style="margin-top: 20px;">
+            <h2>TTL + 死信订单超时取消</h2>
+            <label for="orderId">订单 ID</label>
+            <input id="orderId" type="number" value="1001">
+            <label for="timeoutSeconds">超时时间，单位秒</label>
+            <input id="timeoutSeconds" type="number" value="10">
+            <button onclick="createOrder()">创建订单并发送延迟消息</button>
+            <button class="secondary" onclick="payOrder()">模拟付款</button>
+            <button class="secondary" onclick="listOrders()">查看订单</button>
+            <p class="hint">创建后不付款，等待超时时间到期，订单会变成 CANCELED；提前付款则保持 PAID。</p>
+        </section>
+    </div>
+
+    <section>
+        <h2>响应结果</h2>
+        <pre id="output">点击左侧按钮后，这里会显示接口响应。后端控制台会打印 RabbitMQ 发送、确认、消费、ack 日志。</pre>
+    </section>
+</main>
+
+<script>
+    const output = document.getElementById("output");
+
+    function value(id) {
+        return document.getElementById(id).value;
+    }
+
+    function show(title, data) {
+        output.textContent = title + "\n\n" + JSON.stringify(data, null, 2);
+    }
+
+    function showError(title, error) {
+        output.textContent = title + "\n\n" + error;
+    }
+
+    async function requestJson(url, options) {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        try {
+            return JSON.parse(text);
+        } catch (ignore) {
+            return text;
+        }
+    }
+
+    async function sendDirect() {
+        const content = encodeURIComponent(value("directContent"));
+        try {
+            const data = await requestJson(`/demo-mq/messages/direct?content=${content}`, {method: "POST"});
+            show("普通消息已发送", data);
+        } catch (error) {
+            showError("普通消息发送失败", error);
+        }
+    }
+
+    async function sendUnroutable() {
+        const content = encodeURIComponent(value("directContent"));
+        try {
+            const data = await requestJson(`/demo-mq/messages/unroutable?content=${content}`, {method: "POST"});
+            show("无法路由消息已发送，请看后端 ReturnCallback 日志", data);
+        } catch (error) {
+            showError("无法路由消息发送失败", error);
+        }
+    }
+
+    async function createOrder() {
+        const orderId = value("orderId");
+        const timeoutSeconds = value("timeoutSeconds");
+        try {
+            const data = await requestJson(`/demo-mq/orders/${orderId}?timeoutSeconds=${timeoutSeconds}`, {method: "POST"});
+            show("订单已创建，延迟消息已发送", data);
+        } catch (error) {
+            showError("创建订单失败", error);
+        }
+    }
+
+    async function payOrder() {
+        const orderId = value("orderId");
+        try {
+            const data = await requestJson(`/demo-mq/orders/${orderId}/pay`, {method: "POST"});
+            show("模拟付款完成", data);
+        } catch (error) {
+            showError("模拟付款失败", error);
+        }
+    }
+
+    async function listOrders() {
+        try {
+            const data = await requestJson("/demo-mq/orders", {method: "GET"});
+            show("当前内存订单", data);
+        } catch (error) {
+            showError("查询订单失败", error);
+        }
+    }
+</script>
+</body>
+</html>

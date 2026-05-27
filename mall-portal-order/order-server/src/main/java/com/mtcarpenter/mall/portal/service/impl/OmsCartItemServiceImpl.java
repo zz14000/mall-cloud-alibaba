@@ -48,6 +48,7 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
     @Override
     public int add(OmsCartItem cartItem) {
         int count;
+        //从token中解析用户
         UmsMember currentMember =memberUtil.getRedisUmsMember(request);
         cartItem.setMemberId(currentMember.getId());
         cartItem.setMemberNickname(currentMember.getNickname());
@@ -65,7 +66,7 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
     }
 
     /**
-     * 根据会员id,商品id和规格获取购物车中商品
+     * 内部函数，根据传入的信息查询表中是否已经有了这个商品
      */
     private OmsCartItem getCartItem(OmsCartItem cartItem) {
         OmsCartItemExample example = new OmsCartItemExample();
@@ -90,11 +91,14 @@ public class OmsCartItemServiceImpl implements OmsCartItemService {
 
     @Override
     public List<CartPromotionItem> listPromotion(Long memberId, List<Long> cartIds) {
+        //根据会员id查询购物车所有信息
         List<OmsCartItem> cartItemList = list(memberId);
+        //如果传入了指定的 cartIds，就过滤出这些指定的商品（即用户选择结算的商品）
         if(CollUtil.isNotEmpty(cartIds)){
             cartItemList = cartItemList.stream().filter(item->cartIds.contains(item.getId())).collect(Collectors.toList());
         }
         List<CartPromotionItem> cartPromotionItemList = new ArrayList<>();
+        // 第三步：调用促销服务计算优惠
         if(!CollectionUtils.isEmpty(cartItemList)){
             cartPromotionItemList = promotionService.calcCartPromotion(cartItemList);
         }
