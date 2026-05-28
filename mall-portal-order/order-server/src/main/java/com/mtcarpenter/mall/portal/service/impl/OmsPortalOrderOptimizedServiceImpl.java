@@ -140,7 +140,7 @@ public class OmsPortalOrderOptimizedServiceImpl implements OmsPortalOrderOptimiz
 
             OmsOrder order = buildOrder(orderParam, currentMember, orderItemList);
             orderSn = order.getOrderSn();
-            //在redis侧初始化商品数量
+            //在redis侧存入商品数量
             skuStockReserveService.initStockIfAbsent(cartPromotionItemList);
             //库存预扣
             skuStockReserveService.reserve(orderSn, cartPromotionItemList);

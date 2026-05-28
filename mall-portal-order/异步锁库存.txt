@@ -1,0 +1,4 @@
+1.先检查订单是否已经取消（查看redis中是否有STOCK_CANCELED_KEY_PREFIX型的key），因为消息发送到商品模块需要时间，在此期间用户可能会取消订单。如果取消了，直接return
+2.执行sql语句进行锁库存，local_stock+quantity
+3.二次检查，防止锁库存时订单取消，如果取消了，执行sql语句解锁库存，再return
+4.创建STOCK_LOCKED_KEY_PREFIX型的key，value不重要，标记库存已锁定

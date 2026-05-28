@@ -1,0 +1,23 @@
+支付成功：
+1.通过传递过来的订单id，查询 OmsOrderDetail（订单详情），里面一个存放orderItem的list
+2.调用waitStockLockPersisted，等待商品模块那边锁库存成功，函数内部为轮询redis数据库STOCK_LOCKED_KEY_PREFIX是否存在（锁库存成功后才创建的）
+3.更新订单表，sku库存表（lock_stock - quantity , stock - quantity）
+4.删除redis中的预扣记录和锁定，取消型的key
+
+取消订单/超时未支付：
+1.根据订单id查询出订单
+2.在redis中创建出STOCK_CANCELED_KEY_PREFIX型key的数据
+3.执行sql语句，更新order表的status
+4.查询出订单商品表，再redis有STOCK_LOCKED_KEY_PREFIX型可以的情况下，解除库存锁定（lock_stock - quantity）
+5.回滚redis中的库存预扣
+6.远程feign调用更新优惠劵和积分
+
+为啥支付成功时删redis信息而取消则是回滚
+支付成功：
+ 支付成功后，Redis 预占的库存已经转化为实际扣减 （MySQL 中 stock - quantity ）
+ 预占记录 reserved 和锁定标记 locked 已完成使命，不再需要
+ 此时库存已经从"预占状态"转为"已销售状态"，Redis 侧无需再保留
+取消订单：
+  取消订单意味着交易失败，预占的库存需要释放回可售库存
+  如果不回滚，Redis 库存会永久减少，导致超卖或库存不准确
+  需要通知商品服务停止处理该订单的锁库存消息
