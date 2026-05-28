@@ -12,6 +12,18 @@ spring:
       stat-view-servlet: #访问监控网页的登录用户名和密码
         login-username: druid
         login-password: druid
+  rabbitmq:
+    host: localhost
+    port: 5672
+    virtual-host: /
+    username: guest
+    password: guest
+  redis:
+    host: localhost
+    database: 0
+    port: 6379
+    password: 01star
+    timeout: 300ms
 
 
 # 日志配置
@@ -20,4 +32,3 @@ logging:
     org.springframework.data.mongodb.core: debug
     com.mtcarpenter.mall.mapper: debug
     com.mtcarpenter.mall.portal.dao: debug
-

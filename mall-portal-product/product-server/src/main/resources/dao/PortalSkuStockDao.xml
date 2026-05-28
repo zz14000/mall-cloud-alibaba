@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mtcarpenter.mall.portal.dao.PortalSkuStockDao">
+    <update id="lockStock">
+        UPDATE pms_sku_stock
+        SET lock_stock = lock_stock + #{quantity}
+        WHERE id = #{skuId}
+          AND (stock - lock_stock) &gt;= #{quantity}
+    </update>
+    <update id="unlockStock">
+        UPDATE pms_sku_stock
+        SET lock_stock = lock_stock - #{quantity}
+        WHERE id = #{skuId}
+          AND lock_stock &gt;= #{quantity}
+    </update>
+</mapper>
